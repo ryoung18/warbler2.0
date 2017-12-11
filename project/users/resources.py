@@ -5,14 +5,17 @@ from flask_restful import Api, Resource, fields, marshal_with
 from project.users.models import User
 from project import db, bcrypt
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import desc
 import os
 
 user_blueprint = Blueprint('users', __name__)
 users_api = Api(user_blueprint)
 
 warbler_fields = {
+    'id': fields.Integer,
     'message': fields.String,
-    'created_at': fields.DateTime(dt_format='iso8601')
+    'created_at': fields.DateTime(dt_format='iso8601'),
+    'img_url' : fields.String
 }
 
 followed_fields = {
@@ -24,8 +27,11 @@ followed_fields = {
 user_fields = {
     'id': fields.Integer,
     'email': fields.String,
+    'name': fields.String,
     'username': fields.String,
-    'messages': fields.List(fields.Nested(warbler_fields)),
+    'profile_img': fields.String,
+    'msg_count': fields.Integer,
+    'msgs': fields.List(fields.Nested(warbler_fields)),
     'followed': fields.List(fields.Nested(followed_fields))
 }
 
@@ -78,8 +84,15 @@ class UsersAPI(Resource):
 
 
 class UserAPI(Resource):
+    @marshal_with(user_fields)
     def get(self, user_id): # get single user
-        return User.query.get_or_404(user_id)
+        user = User.query.get_or_404(user_id)
+        # msgCount = User.query.filter_by(id=user_id).first().messages.count()
+        # msg_count = User.query.get_or_404(user_id).messages.count()
+        # msg_count = user.messages.count()
+        user.msg_count = user.messages.count()
+        user.msgs = user.messages.order_by(desc('id')).all()
+        return user
 
 class Auth(Resource):
     def post(self):

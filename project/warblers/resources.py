@@ -28,8 +28,6 @@ warbler_fields = {
 class WarblersAPI(Resource):
     @token_required
     def post(self, user_id): #create new wablereressss
-        print('WarblerAPI')
-        from IPython import embed; embed()
         content = request.get_json()
         warble = Warbler(content['message'], content['img_url'], user_id)
         db.session.add(warble)
@@ -61,5 +59,4 @@ class WarblersAll(Resource):
 
 warblers_api.add_resource(WarblersAPI, '/<string:user_id>')
 warblers_api.add_resource(WarblerAPI, '/<string:user_id>/<string:warbler_id>')
-warblers_api.add_resource(WarblersAll, '/')
-
+warblers_api.add_resource(WarblersAll, '')
